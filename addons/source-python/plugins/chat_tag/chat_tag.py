@@ -311,7 +311,7 @@ def tell_all(message):
 def colors(userid):
 	menu = ListMenu(
     title='Avaible Colors\n')
-	for i in color:
+	for i in get_color():
 		menu.append(Text('%s' % (i)))
 	menu.send(index_from_userid(userid))
 				
