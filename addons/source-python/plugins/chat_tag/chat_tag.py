@@ -293,7 +293,7 @@ def color_command(command, index, team_only=False):
 			players[userid]['color'] = args
 			SayText2(f'\x04You have changed your color to {chat_color(args)}{args}').send(index_from_userid(userid))
 		else:
-			SayText2(f'\x04{args} color is not avaible').send(index_from_userid(userid))
+			SayText2(f'\x04{args} color is not available').send(index_from_userid(userid))
 			colors(userid)
 		return False
 	return False
