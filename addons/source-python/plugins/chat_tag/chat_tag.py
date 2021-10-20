@@ -1,15 +1,14 @@
 import os, path
 from events import Event
-from commands.say import SayFilter
+from commands.say import SayCommand
 from core import echo_console, SOURCE_ENGINE
 from sqlite3 import dbapi2 as sqlite
 from players.entity import Player
 from players.helpers import index_from_userid, userid_from_index
 from menus import ListMenu, Text
-from filters.players import PlayerIter
-from colors import Color
+from messages.hooks import HookUserMessage
 from messages import SayText2
-
+from listeners.tick import Delay
 
 class SQLiteManager(object):
 	players = []
@@ -267,47 +266,51 @@ def load():
 def unload():
 	savedatabase()
 
-@SayFilter
-def say_filter(command, index, teamonly):
-	userid = None
-	if index:
-		userid = userid_from_index(index)
-	
-	if userid and command:
-		text = command[0].replace('!', '', 1).replace('/', '', 1).lower()
-		args = command.arg_string
-		if text == 'tag':
-			if args:
-				players[userid]['tag'] = args
-				tell(userid, '\x04You have changed your tag to %s[%s]' % (chat_color(players[userid]['color']), args))
-				return False
-		elif text == 'color':
-			if args:
-				if args in get_color():
-					players[userid]['color'] = args
-					tell(userid, '\x04You have changed your color to %s%s' % (chat_color(args), args))
-				else:
-					tell(userid, '\x04%s color is not avaible' % (args))
-					colors(userid)
-				return False
-		return chat(userid, text, args, command[0] + ' ' + args)
+@HookUserMessage('SayText2')
+def _saytext2_hook(recipients, data):
+	if data['index'] == 0:
+		return True
+	player = Player(data['index'])
+	Delay(0, chat, (player.userid, data.param2))
+	recipients.remove_all_players()
 
-def chat(userid, text_command, args, text):
-	name = Player(index_from_userid(userid)).name
-	if SOURCE_ENGINE == 'csgo':
-		team_color = {1: '\x08', 2: '\x0F', 3: '\x0B'}[Player(index_from_userid(userid)).team] 
-		chco = '\x01'
-	else:
-		naco = {1: '\x07CDCDCD', 2: '\x07FF3D3D', 3: '\x079BCDFF', 0: '\x07CDCDCD'}[Player(index_from_userid(userid)).team]
-		chco = '\x07FFB300'
-	tell_all('%s[%s]%s %s %s: %s' % (chat_color(players[userid]['color']), players[userid]['tag'], naco,name,chco,text))
+@SayCommand('tag')
+def tag_command(command, index, team_only=False):
+	userid = Player(index).userid
+	args = command.arg_string
+	if args:
+		players[userid]['tag'] = args
+		SayText2(f"\x04You have changed your tag to {chat_color(players[userid]['color'])}{args}").send(index_from_userid(userid))
+		return False
 	return False
 
-def tell_all(message):
-	message = '{}'.format(message)
-	for i in getUseridList():
-		tell(i, message)
-					
+@SayCommand('color')
+def color_command(command, index, team_only=False):
+	userid = Player(index).userid
+	args = command.arg_string
+	if args:
+		if args in get_color():
+			players[userid]['color'] = args
+			SayText2(f'\x04You have changed your color to {chat_color(args)}{args}').send(index_from_userid(userid))
+		else:
+			SayText2(f'\x04{args} color is not avaible').send(index_from_userid(userid))
+			colors(userid)
+		return False
+	return False
+
+def chat(userid, text):
+	player = Player.from_userid(userid)
+	name = player.name
+	userid = player.userid
+	if SOURCE_ENGINE == 'csgo':
+		team_color = {1: '\x08', 2: '\x0F', 3: '\x0B'}[player.team] 
+		server_chat_color = '\x01'
+	else:
+		team_color = {1: '\x07CDCDCD', 2: '\x07FF3D3D', 3: '\x079BCDFF', 0: '\x07CDCDCD'}[player.team]
+		server_chat_color = '\x07FFB300'
+	SayText2(f"{chat_color(players[userid]['color'])}[{players[userid]['tag']}]{team_color} {name}: {server_chat_color}{text}").send()
+	return False
+		
 def colors(userid):
 	menu = ListMenu(
     title='Avaible Colors\n')
@@ -315,18 +318,11 @@ def colors(userid):
 		menu.append(Text('%s' % (i)))
 	menu.send(index_from_userid(userid))
 				
-def tell(userid, text):
-    SayText2(message='' + text).send(index_from_userid(userid))				
-
 def chat_color(color_name):
 	return color[color_name]
 
 def get_color():
 	return color
-
-def getUseridList():
-	for i in PlayerIter.iterator():
-		yield i.userid
 
 if SOURCE_ENGINE == 'csgo':
 	color = {
