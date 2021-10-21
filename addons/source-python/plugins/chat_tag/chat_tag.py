@@ -312,10 +312,9 @@ def chat(userid, text):
 	return False
 		
 def colors(userid):
-	menu = ListMenu(
-    title='Avaible Colors\n')
+	menu = ListMenu(title='Available Colors\n')
 	for i in get_color():
-		menu.append(Text('%s' % (i)))
+		menu.append(Text(f'{i}'))
 	menu.send(index_from_userid(userid))
 				
 def chat_color(color_name):
