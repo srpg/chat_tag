@@ -271,7 +271,7 @@ def _saytext2_hook(recipients, data):
 	if data['index'] == 0:
 		return True
 	player = Player(data['index'])
-	Delay(0, chat, (player.userid, data.param2))
+	Delay(0, chat, (player.userid, data.param2, list(recipients)))
 	recipients.remove_all_players()
 
 @SayCommand('tag')
@@ -298,7 +298,7 @@ def color_command(command, index, team_only=False):
 		return False
 	return False
 
-def chat(userid, text):
+def chat(userid, text, *ply_indexes):
 	player = Player.from_userid(userid)
 	name = player.name
 	userid = player.userid
@@ -308,7 +308,7 @@ def chat(userid, text):
 	else:
 		team_color = {1: '\x07CDCDCD', 2: '\x07FF3D3D', 3: '\x079BCDFF', 0: '\x07CDCDCD'}[player.team]
 		server_chat_color = '\x07FFB300'
-	SayText2(f"{chat_color(players[userid]['color'])}[{players[userid]['tag']}]{team_color} {name}: {server_chat_color}{text}").send()
+	SayText2(f"{chat_color(players[userid]['color'])}[{players[userid]['tag']}]{team_color} {name}: {server_chat_color}{text}").send(*ply_indexes)
 	return False
 		
 def colors(userid):
