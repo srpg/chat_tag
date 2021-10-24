@@ -1,5 +1,5 @@
 # chat_tag
-This plugin requires <a href="https://github.com/Source-Python-Dev-Team/Source.Python">Source.Python</url>
+This plugin requires <a href="https://github.com/Source-Python-Dev-Team/Source.Python">Source.Python</a>
 
 This plugin allows players change their tag and tag color
 
