@@ -1,5 +1,7 @@
 # chat_tag
-Source.Python plugin that have custom chat tag
+This plugin requires <a href="https://github.com/Source-Python-Dev-Team/Source.Python">Source.Python</url>
+
+This plugin allows players change their tag and tag color
 
 Commands: !color colorname to change tag color, !tag tagname to change chat tag
 
