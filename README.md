@@ -3,6 +3,7 @@ This plugin requires <a href="https://github.com/Source-Python-Dev-Team/Source.P
 
 This plugin allows players change their tag and tag color
 
-Commands: !color colorname to change tag color, !tag tagname to change chat tag
+Commands: color <colorname> to change tag color
+tag <text> to change tag
 
 Load commannd: sp plugin load chat_tag
