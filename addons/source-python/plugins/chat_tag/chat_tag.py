@@ -10,6 +10,7 @@ from messages.hooks import HookUserMessage
 from messages import SayText2
 from listeners.tick import Delay
 
+
 class SQLiteManager(object):
 	players = []
     
@@ -262,7 +263,7 @@ def load():
 	database = DATABASE_STORAGE_METHOD(databasePath)
 	database.execute('VACUUM')
 	echo_console('[Tag] Loaded')
-	
+
 def unload():
 	savedatabase()
 
@@ -271,8 +272,20 @@ def _saytext2_hook(recipients, data):
 	if data['index'] == 0:
 		return True
 	player = Player(data['index'])
-	Delay(0, chat, (player.userid, data.param2, list(recipients)))
+	player.fire_game_event('player_chat', userid=player.userid)
 	recipients.remove_all_players()
+
+@Event('player_say')
+def player_say(args):
+	text = args['text']
+	userid = args['userid']
+	chat_message(userid, text)
+
+@SayCommand('chat_colors')
+def chat_color_command(command, index, team_only=False):
+	userid = Player(index).userid
+	colors(userid)
+	return False
 
 @SayCommand('tag')
 def tag_command(command, index, team_only=False):
@@ -281,6 +294,7 @@ def tag_command(command, index, team_only=False):
 	if args:
 		players[userid]['tag'] = args
 		SayText2(f"\x04You have changed your tag to {chat_color(players[userid]['color'])}{args}").send(index_from_userid(userid))
+		savedatabase()
 		return False
 	return False
 
@@ -292,13 +306,14 @@ def color_command(command, index, team_only=False):
 		if args in get_color():
 			players[userid]['color'] = args
 			SayText2(f'\x04You have changed your color to {chat_color(args)}{args}').send(index_from_userid(userid))
+			savedatabase()
 		else:
 			SayText2(f'\x04{args} color is not available').send(index_from_userid(userid))
 			colors(userid)
 		return False
 	return False
 
-def chat(userid, text, *ply_indexes):
+def chat_message(userid, text):
 	player = Player.from_userid(userid)
 	name = player.name
 	userid = player.userid
@@ -308,8 +323,7 @@ def chat(userid, text, *ply_indexes):
 	else:
 		team_color = {1: '\x07CDCDCD', 2: '\x07FF3D3D', 3: '\x079BCDFF', 0: '\x07CDCDCD'}[player.team]
 		server_chat_color = '\x07FFB300'
-	SayText2(f"{chat_color(players[userid]['color'])}[{players[userid]['tag']}]{team_color} {name}: {server_chat_color}{text}").send(*ply_indexes)
-	return False
+	SayText2(f"{chat_color(players[userid]['color'])}[{players[userid]['tag']}]{team_color} {name}: {server_chat_color}{text}").send()
 		
 def colors(userid):
 	menu = ListMenu(title='Available Colors\n')
