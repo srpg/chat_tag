@@ -272,7 +272,6 @@ def _saytext2_hook(recipients, data):
 	if data['index'] == 0:
 		return True
 	player = Player(data['index'])
-	player.fire_game_event('player_chat', userid=player.userid)
 	recipients.remove_all_players()
 
 @Event('player_say')
