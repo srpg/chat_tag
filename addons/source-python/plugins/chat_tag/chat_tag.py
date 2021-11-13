@@ -278,6 +278,8 @@ def _saytext2_hook(recipients, data):
 def player_say(args):
 	text = args['text']
 	userid = args['userid']
+	if userid == 0:
+		return
 	chat_message(userid, text)
 
 @SayCommand('chat_colors')
